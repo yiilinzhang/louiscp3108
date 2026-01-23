@@ -1,0 +1,32 @@
+[
+  {
+    "request": {
+      "body": "",
+      "headers": {
+        "Authorization": "***",
+        "host": "s3.ap-southeast-1.amazonaws.com",
+        "x-amz-date": "20210802T105948Z",
+        "content-length": "0",
+        "x-amz-content-sha256": "***"
+      },
+      "method": "head",
+      "options": {
+        "with_body": "true",
+        "recv_timeout": 660000
+      },
+      "request_body": "",
+      "url": "https://s3.ap-southeast-1.amazonaws.com/test-sa-assets/courses-test/1/testFolder/test4.png"
+    },
+    "response": {
+      "binary": false,
+      "body": null,
+      "headers": {
+        "Content-Type": "application/xml",
+        "Date": "Mon, 02 Aug 2021 10:59:47 GMT",
+        "Server": "AmazonS3"
+      },
+      "status_code": 404,
+      "type": "ok"
+    }
+  }
+]

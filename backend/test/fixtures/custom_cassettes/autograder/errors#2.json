@@ -1,0 +1,40 @@
+[
+  {
+    "request": {
+      "body":
+        "{\r\n  \"library\": {\r\n    \"chapter\": 2,\r\n    \"external\": {\r\n      \"name\": \"NONE\",\r\n      \"symbols\": []\r\n    },\r\n    \"globals\": []\r\n  },\r\n  \"prependProgram\": \"\",\r\n  \"studentProgram\": \"const f = i => f(i);\",\r\n  \"postpendProgram\": \"\",\r\n  \"testCases\": [\r\n     {\r\n      \"answer\": \"1\",\r\n      \"program\": \"f(1);\",\r\n      \"score\": 1\r\n    },\r\n    {\r\n      \"answer\": \"55\",\r\n      \"program\": \"f(10);\",\r\n      \"score\": 1\r\n    }\r\n  ]\r\n}",      
+      "headers": {
+        "Authorization": "hello_world",
+        "host": "lambda.ap-southeast-1.amazonaws.com",
+        "x-amz-date": "20180809T095544Z",
+        "x-amz-content-sha256": "",
+        "content-type": "application/json"
+      },
+      "method": "post",
+      "options": {
+        "with_body": "true",
+        "recv_timeout": 30000
+      },
+      "request_body": "",
+      "url": "~r/https://lambda.ap-southeast-1.amazonaws.com/.*/"
+    },
+    "response": {
+      "binary": false,
+      "body":
+        "{\"errorMessage\": \"2019-05-18T05:26:11.299Z 21606396-02e0-4fd5-a294-963bb7994e75 Task timed out after 10.01 seconds\"}",
+        "headers": {
+        "Date": "Thu, 09 Aug 2018 09:55:45 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "114",
+        "Connection": "keep-alive",
+        "x-amzn-RequestId": "6049db71-33fa-4faa-88c4-38f57b6754f3",
+        "X-Amz-Function-Error": "Unhandled",
+        "x-amzn-Remapped-Content-Length": "0",
+        "X-Amz-Executed-Version": "$LATEST",
+        "X-Amzn-Trace-Id": "root=1-6049db71-38f57b6754f379946049db71;sampled=0"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "skip_files": [
+    "lib/cadet_web.ex",
+    "lib/cadet_web/endpoint.ex",
+    "lib/cadet.ex",
+    "lib/cadet/application.ex",
+    "lib/cadet/release.ex",
+    "lib/cadet/repo.ex",
+    "lib/mix/tasks",
+    "test/support",
+    "test/factories",
+    "src/source_lexer.erl"
+  ]
+}

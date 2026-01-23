@@ -1,0 +1,39 @@
+[
+  {
+    "request": {
+      "body":
+        "{\r\n  \"library\": {\r\n    \"chapter\": 2,\r\n    \"external\": {\r\n      \"name\": \"NONE\",\r\n      \"symbols\": []\r\n    },\r\n    \"globals\": []\r\n  },\r\n  \"prependProgram\": \"\",\r\n  \"studentProgram\": \"consst f = i => i === 0 ? 0 : i < 3 ? 1 : f(i-1) + f(i-2);\",\r\n  \"postpendProgram\": \"\",\r\n  \"testCases\": [\r\n     {\r\n      \"answer\": \"1\",\r\n      \"program\": \"f(1);\",\r\n      \"score\": 1\r\n    },\r\n    {\r\n      \"answer\": \"55\",\r\n      \"program\": \"f(10);\",\r\n      \"score\": 1\r\n    }\r\n  ]\r\n}",
+      "headers": {
+        "Authorization": "hello_world",
+        "host": "lambda.ap-southeast-1.amazonaws.com",
+        "x-amz-date": "20180809T095328Z",
+        "x-amz-content-sha256": "",
+        "content-type": "application/json"
+      },
+      "method": "post",
+      "options": {
+        "with_body": "true",
+        "recv_timeout": 30000
+      },
+      "request_body": "",
+      "url": "~r/https://lambda.ap-southeast-1.amazonaws.com/.*/"
+    },
+    "response": {
+      "binary": false,
+      "body":
+        "{\r\n  \"totalScore\": 0,\r\n  \"maxScore\": 2,\r\n  \"results\": [\r\n    {\r\n      \"resultType\": \"error\",\r\n      \"errors\": [\r\n        {\r\n          \"errorType\": \"syntax\",\r\n          \"line\": 1,\r\n          \"location\": \"student\",\r\n          \"errorLine\": \"consst f = i => i === 0 ? 0 : i < 3 ? 1 : f(i-1) + f(i-2);\",\r\n          \"errorExplanation\": \"SyntaxError: Unexpected token (2:7)\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"resultType\": \"error\",\r\n      \"errors\": [\r\n        {\r\n          \"errorType\": \"syntax\",\r\n          \"line\": 1,\r\n          \"location\": \"student\",\r\n          \"errorLine\": \"consst f = i => i === 0 ? 0 : i < 3 ? 1 : f(i-1) + f(i-2);\",\r\n          \"errorExplanation\": \"SyntaxError: Unexpected token (2:7)\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}",
+      "headers": {
+        "Date": "Thu, 09 Aug 2018 09:53:29 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "175",
+        "Connection": "keep-alive",
+        "x-amzn-RequestId": "6049db71-33fa-4faa-88c4-38f57b6754f3",
+        "x-amzn-Remapped-Content-Length": "0",
+        "X-Amz-Executed-Version": "$LATEST",
+        "X-Amzn-Trace-Id": "root=1-6049db71-38f57b6754f379946049db71;sampled=0"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]
