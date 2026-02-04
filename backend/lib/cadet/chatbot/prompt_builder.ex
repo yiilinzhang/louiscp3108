@@ -4,7 +4,7 @@ defmodule Cadet.Chatbot.PromptBuilder do
   """
 
   alias Cadet.Chatbot.SicpNotes
-  #CHANGED promp to stop chatbit form referrign to js
+  # CHANGED promp to stop chatbit form referrign to js
   @prompt_prefix """
   You are a competent tutor, assisting a student who is learning computer science following the textbook "Structure and Interpretation of Computer Programs, JavaScript edition (In Source language)". The student request is about a paragraph of the book. The request may be a follow-up request to a request that was posed to you previously.
 
