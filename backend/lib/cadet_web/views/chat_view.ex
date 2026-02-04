@@ -3,9 +3,10 @@ defmodule CadetWeb.ChatView do
 
   def render("conversation_init.json", %{
         conversation_id: id,
+        messages: messages,
         max_content_size: size
       }) do
-    %{conversationId: id, maxContentSize: size}
+    %{conversationId: id, messages: messages, maxContentSize: size}
   end
 
   def render("conversation.json", %{conversation_id: id, response: response}) do

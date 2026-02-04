@@ -1,15 +1,17 @@
 import { Button } from '@blueprintjs/core';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { useTokens } from 'src/commons/utils/Hooks';
 import { continueChat, initChat } from 'src/features/sicp/chatCompletion/api';
 import { SicpSection } from 'src/features/sicp/chatCompletion/chatCompletion';
-import { SourceTheme } from 'src/features/sicp/SourceTheme';
 import classes from 'src/styles/Chatbot.module.scss';
+
+import ChatbotCodeSnippet from './ChatbotCodeSnippet';
 
 type Props = {
   getSection: () => SicpSection;
   getText: () => string;
+  activeSnippetId: string;
+  setActiveSnippetId: (id: string) => void;
 };
 
 const INITIAL_MESSAGE: Readonly<ChatMessage> = {
@@ -26,10 +28,9 @@ const scrollToBottom = (ref: React.RefObject<HTMLDivElement>) => {
   ref.current?.scrollTo({ top: ref.current?.scrollHeight });
 };
 
-const ChatBox: React.FC<Props> = ({ getSection, getText }) => {
+const ChatBox: React.FC<Props> = ({ getSection, getText, activeSnippetId, setActiveSnippetId }) => {
   const chatRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [chatId, setChatId] = useState<string>();
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
   const [userInput, setUserInput] = useState('');
   const [maxContentSize, setMaxContentSize] = useState(1000);
@@ -39,52 +40,29 @@ const ChatBox: React.FC<Props> = ({ getSection, getText }) => {
     setUserInput(event.target.value);
   };
 
-  // const sendMessage = useCallback(() => {
-  //   if (userInput.trim() === '') {
-  //     return;
-  //   }
-  //   setUserInput('');
-  //   setMessages(prev => [...prev, { role: 'user', content: userInput }]);
-  //   setIsLoading(true);
-  //   continueChat(tokens, chatId!, userInput)
-  //     .then(resp => {
-  //       const message = resp.response;
-  //       setMessages(prev => [...prev, { role: 'assistant', content: message }]);
-  //     })
-  //     .catch(() => {
-  //       setMessages(prev => [...prev, BOT_ERROR_MESSAGE]);
-  //     })
-  //     .finally(() => {
-  //       setIsLoading(false);
-  //     });
-  // }, [chatId, tokens, userInput, maxContentSize]);
+  // sendMessage sends section + text with every message
+  const sendMessage = useCallback(() => {
+    if (userInput.trim() === '') return;
 
+    setUserInput('');
+    setMessages(prev => [...prev, { role: 'user', content: userInput }]);
+    setIsLoading(true);
 
-// AFTER: sendMessage sends section + text too
-const sendMessage = useCallback(() => {
-   if (!chatId) {
-    console.warn("Chat not initialised yet (chatId missing)");
-    return;
-  }
-  if (userInput.trim() === '') return;
-  
-  setUserInput('');
-  setMessages(prev => [...prev, { role: 'user', content: userInput }]);
-  setIsLoading(true);
-  
-  // Get FRESH section and text at send time!
-  const currentSection = getSection();
-  const currentText = getText();
-  
-  continueChat(tokens, chatId!, userInput, currentSection, currentText)
-    .then(resp => {
-      setMessages(prev => [...prev, { role: 'assistant', content: resp.response }]);
-    })
-    .catch(() => {
-      setMessages(prev => [...prev, BOT_ERROR_MESSAGE]);
-    })
-    .finally(() => setIsLoading(false));
-}, [chatId, tokens, userInput, getSection, getText]);
+    // Get FRESH section and text at send time!
+    const currentSection = getSection();
+    const currentText = getText();
+
+    // No chatId needed - backend identifies conversation by user
+    continueChat(tokens, userInput, currentSection, currentText)
+      .then(resp => {
+        setMessages(prev => [...prev, { role: 'assistant', content: resp.response }]);
+      })
+      .catch(() => {
+        setMessages(prev => [...prev, BOT_ERROR_MESSAGE]);
+      })
+      .finally(() => setIsLoading(false));
+  }, [tokens, userInput, getSection, getText]);
+
   const keyDown: React.KeyboardEventHandler<HTMLInputElement> = useCallback(
     e => {
       if (e.key === 'Enter' && !isLoading) {
@@ -94,27 +72,18 @@ const sendMessage = useCallback(() => {
     [isLoading, sendMessage]
   );
 
-  // const resetChat = useCallback(() => {
-  //   initChat(tokens, getSection(), getText()).then(resp => {
-  //     const message = resp.response;
-  //     const conversationId = resp.conversationId;
-  //     const maxMessageSize = resp.maxContentSize;
-  //     setMessages([message]);
-  //     setMaxContentSize(maxMessageSize);
-  //     setChatId(conversationId);
-  //     setUserInput('');
-  //   });
-  // }, [getSection, getText, tokens]);
-
   const resetChat = useCallback(() => {
     initChat(tokens).then(resp => {
-      console.log(resp)
-      const conversationId = resp.conversationId;
+      console.log(resp);
+      const conversationMessages = resp.messages;
       const maxMessageSize = resp.maxContentSize;
-      setMessages([INITIAL_MESSAGE]); // Use local constant
+      // Load all previous messages from the conversation, or use initial if empty
+      if (conversationMessages && conversationMessages.length > 0) {
+        setMessages(conversationMessages);
+      } else {
+        setMessages([INITIAL_MESSAGE]);
+      }
       setMaxContentSize(maxMessageSize);
-      console.log(String(conversationId))
-      setChatId(String(conversationId));
       setUserInput('');
     });
   }, [tokens]);
@@ -138,8 +107,12 @@ const sendMessage = useCallback(() => {
             className={classes[`${message.role}`]}
             style={{ whiteSpace: 'pre-line' }}
           >
-            {/* <RenderMessageContent message={message} /> */}
-            {renderMessageContent(message)}
+            <MessageRenderer
+              message={message}
+              messageIndex={index}
+              activeSnippetId={activeSnippetId}
+              setActiveSnippetId={setActiveSnippetId}
+            />
           </div>
         ))}
         {isLoading && <p>loading...</p>}
@@ -172,29 +145,20 @@ const sendMessage = useCallback(() => {
   );
 };
 
-// const renderMessageContent = (message: ChatMessage, index: number) => {
-//   let contentToRender = message.content;
-//   if (message.role === 'assistant' && index > 0) {
-//     contentToRender += '\n\nThe answer is generated by GPT-4 and may not be correct.';
-//   }
-//   // TODO: Parse full Markdown, make snippets runnable
-//   if (!contentToRender.includes('```javascript')) {
-//     return contentToRender;
-//   }
-//   const renderableRegex = /```javascript\n([\s\S]*?)\n```/g;
-//   const chunks = contentToRender.split(renderableRegex);
-//   return chunks.map((chunk, i) => {
-//     return renderableRegex.test(chunk) ? (
-//       <SyntaxHighlighter language="javascript" style={SourceTheme} key={i}>
-//         {chunk}
-//       </SyntaxHighlighter>
-//     ) : (
-//       <React.Fragment key={i}>{chunk.trim()}</React.Fragment>
-//     );
-//   });
-// };
+// Message renderer component that can render code blocks with interactive snippets
+type MessageRendererProps = {
+  message: ChatMessage;
+  messageIndex: number;
+  activeSnippetId: string;
+  setActiveSnippetId: (id: string) => void;
+};
 
-const renderMessageContent = (message: ChatMessage) => {
+const MessageRenderer: React.FC<MessageRendererProps> = ({
+  message,
+  messageIndex,
+  activeSnippetId,
+  setActiveSnippetId
+}) => {
   const content = message.content;
 
   // Matches code blocks: ```lang ... ```
@@ -203,12 +167,13 @@ const renderMessageContent = (message: ChatMessage) => {
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
+  let codeBlockIndex = 0;
 
   while ((match = codeBlockRegex.exec(content)) !== null) {
     if (match.index > lastIndex) {
       const text = content.slice(lastIndex, match.index);
       parts.push(
-        <div key={lastIndex} style={{ marginBottom: '0.5em' }}>
+        <div key={`text-${lastIndex}`} style={{ marginBottom: '0.5em' }}>
           {text.split('\n').map((line, i) => (
             <div key={i}>{line}</div>
           ))}
@@ -216,18 +181,47 @@ const renderMessageContent = (message: ChatMessage) => {
       );
     }
 
-    const lang = match[1] || 'text';
+    const lang = match[1] || 'javascript';
     const code = match[2];
-    parts.push(
-      <div
-        key={match.index}
-        className="my-2 rounded-md border border-gray-300 bg-gray-100 p-2 overflow-x-auto"
-      >
-        <SyntaxHighlighter language={lang} style={SourceTheme} customStyle={{ margin: 0 }}>
-          {code}
-        </SyntaxHighlighter>
-      </div>
-    );
+    // Create a unique ID for this code snippet
+    const snippetId = `msg-${messageIndex}-code-${codeBlockIndex}`;
+    codeBlockIndex++;
+
+    // Only use ChatbotCodeSnippet for javascript/js code blocks
+    if (lang === 'javascript' || lang === 'js') {
+      parts.push(
+        <ChatbotCodeSnippet
+          key={snippetId}
+          id={snippetId}
+          code={code}
+          activeSnippetId={activeSnippetId}
+          setActiveSnippet={setActiveSnippetId}
+          language={lang}
+        />
+      );
+    } else {
+      // For other languages, just show syntax highlighting without run capability
+      parts.push(
+        <div
+          key={snippetId}
+          className="chatbot-code-block-static"
+          style={{
+            margin: '0.5em 0',
+            borderRadius: '4px',
+            overflow: 'hidden'
+          }}
+        >
+          <ChatbotCodeSnippet
+            key={snippetId}
+            id={snippetId}
+            code={code}
+            activeSnippetId={activeSnippetId}
+            setActiveSnippet={setActiveSnippetId}
+            language={lang}
+          />
+        </div>
+      );
+    }
 
     lastIndex = codeBlockRegex.lastIndex;
   }
@@ -235,7 +229,7 @@ const renderMessageContent = (message: ChatMessage) => {
   if (lastIndex < content.length) {
     const text = content.slice(lastIndex);
     parts.push(
-      <div key={lastIndex} style={{ marginBottom: '0.5em' }}>
+      <div key={`text-end-${lastIndex}`} style={{ marginBottom: '0.5em' }}>
         {text.split('\n').map((line, i) => (
           <div key={i}>{line}</div>
         ))}
